@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <title>Flight Explorer</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+</head>
+<body>
+  <div id="menu">
+    <b>Vliegtuig</b><br>
+
+    <button onclick="changePlane('jet')">Straaljager</button>
+    <button onclick="changePlane('prop')">Propeller</button>
+    <button onclick="changePlane('airliner')">Passagiersvliegtuig</button>
+
+    <hr>
+
+    <b>Stad</b><br>
+
+    <button onclick="city('newyork')">New York</button>
+    <button onclick="city('paris')">Parijs</button>
+    <button onclick="city('tokyo')">Tokyo</button>
+
+    <hr>
+
+    WASD = vliegen<br>
+    Q/E = omhoog/omlaag
+  </div>
+
+  <script src="script/main.js"></script>
+</body>
+</html>
