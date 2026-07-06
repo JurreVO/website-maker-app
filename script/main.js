@@ -63,27 +63,65 @@ buildPlane("jet");
 camera.position.set(0, 5, 10);
 
 const keys = {};
+const viewState = {
+  yaw: 0,
+  pitch: -0.2,
+};
 
-document.addEventListener("keydown", (e) => (keys[e.key] = true));
-document.addEventListener("keyup", (e) => (keys[e.key] = false));
+function handleKey(event, isPressed) {
+  keys[event.key] = isPressed;
+
+  if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "w", "a", "s", "d", "q", "e"].includes(event.key)) {
+    event.preventDefault();
+  }
+}
+
+document.addEventListener("keydown", (e) => handleKey(e, true));
+document.addEventListener("keyup", (e) => handleKey(e, false));
 
 function animate() {
   requestAnimationFrame(animate);
 
-  if (keys["w"]) plane.position.z -= 0.2;
-  if (keys["s"]) plane.position.z += 0.2;
+  if (keys["ArrowLeft"]) viewState.yaw += 0.03;
+  if (keys["ArrowRight"]) viewState.yaw -= 0.03;
+  if (keys["ArrowUp"]) viewState.pitch = Math.max(-0.7, viewState.pitch - 0.03);
+  if (keys["ArrowDown"]) viewState.pitch = Math.min(0.3, viewState.pitch + 0.03);
 
-  if (keys["a"]) plane.position.x -= 0.2;
-  if (keys["d"]) plane.position.x += 0.2;
+  const forward = new THREE.Vector3(Math.sin(viewState.yaw), 0, Math.cos(viewState.yaw)).normalize();
+  const right = new THREE.Vector3(Math.cos(viewState.yaw), 0, -Math.sin(viewState.yaw)).normalize();
+  const move = new THREE.Vector3();
+
+  if (keys["w"]) move.sub(forward);
+  if (keys["s"]) move.add(forward);
+  if (keys["a"]) move.sub(right);
+  if (keys["d"]) move.add(right);
+
+  plane.position.addScaledVector(move, 0.2);
 
   if (keys["q"]) plane.position.y += 0.2;
   if (keys["e"]) plane.position.y -= 0.2;
 
-  camera.position.lerp(
-    new THREE.Vector3(plane.position.x, plane.position.y + 4, plane.position.z + 10),
-    0.05
+  const distance = 12;
+  const desiredPosition = new THREE.Vector3(
+    plane.position.x + Math.sin(viewState.yaw) * distance,
+    plane.position.y + 4 + Math.sin(viewState.pitch) * 4,
+    plane.position.z + Math.cos(viewState.yaw) * distance
   );
 
+  const lookDirection = new THREE.Vector3(
+    Math.sin(viewState.yaw),
+    Math.sin(viewState.pitch) * 0.5,
+    Math.cos(viewState.yaw)
+  ).normalize();
+
+  const targetQuaternion = new THREE.Quaternion().setFromUnitVectors(
+    new THREE.Vector3(1, 0, 0),
+    lookDirection
+  );
+
+  plane.quaternion.slerp(targetQuaternion, 0.08);
+
+  camera.position.lerp(desiredPosition, 0.05);
   camera.lookAt(plane.position);
 
   renderer.render(scene, camera);
